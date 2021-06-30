@@ -8,7 +8,8 @@ use app\models\Shorturl;
 
 class UrlController extends \yii\web\Controller
 {
-    private function errorResponse($message) {
+    private function errorResponse($message)
+    {
         Yii::$app->response->statusCode = 400;
         return $this->asJson(['error' => $message]);
     }
@@ -24,10 +25,10 @@ class UrlController extends \yii\web\Controller
         return substr(str_shuffle($permitted_chars), 0, 6);
     }
 
-    private function create_short_url($url, $shorturl): string
+    private function create_short_url($shorturl): string
     {
-        $parse = parse_url($url);
-        return "${parse['scheme']}://${parse['host']}/${shorturl}";
+        $host = Yii::$app->request->hostinfo;
+        return "${host}/${shorturl}";
     }
 
     protected function check_url_exists($url): bool
@@ -79,7 +80,7 @@ class UrlController extends \yii\web\Controller
             //$record = Shorturl::findOne($count_records['id']);
             $record->counter += 1;
             $record->save();
-            return $this->create_short_url($url, $record->shorturl);
+            return $this->create_short_url($record->shorturl);
         }
 
         if (!$this->check_url_exists($url)) {
@@ -92,7 +93,21 @@ class UrlController extends \yii\web\Controller
         $model->counter = 1;
         $model->save();
 
-        return $this->create_short_url($url, $model->shorturl);
+        return $this->create_short_url($model->shorturl);
+
+    }
+
+    public function actionRedirect()
+    {
+        $hash = Yii::$app->request->get('hash');
+        $record = Shorturl::find()
+            ->where(['shorturl' => $hash])
+            ->one();
+        if (!is_null($record)) {
+            return $this->redirect($record->url);
+        } else {
+            return $this->errorResponse("Указанная ссылка, не найдена.");
+        }
 
     }
 

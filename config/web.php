@@ -56,6 +56,7 @@ $config = [
             'rules' => [
                 'POST api/v1/link/create' => 'url/create',
                 'GET api/v1/link/<hash:\w+>' => 'url/index', // c версионностью апи в Yii до конца не разобрался
+                '/<hash:\w+>' => 'url/redirect'
             ],
         ],
 
