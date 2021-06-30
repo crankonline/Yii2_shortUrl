@@ -51,8 +51,6 @@ class UrlController extends \yii\web\Controller
             ->where(['shorturl' => $hash])
             ->one();
         if (!is_null($record)) {
-            $record->counter += 1;
-            $record->save();
             $return = [
                 'url' => $record->url,
                 'count' => $record->counter
@@ -77,9 +75,6 @@ class UrlController extends \yii\web\Controller
             ->where(['url' => $url])
             ->one();
         if (!is_null($record)) {
-            //$record = Shorturl::findOne($count_records['id']);
-            $record->counter += 1;
-            $record->save();
             return $this->create_short_url($record->shorturl);
         }
 
@@ -90,7 +85,7 @@ class UrlController extends \yii\web\Controller
         $model->url = $url;
         $model->shorturl = $this->shuffle();
         $model->creating_date_time = date('Y-m-d H:i:s');
-        $model->counter = 1;
+        $model->counter = 0;
         $model->save();
 
         return $this->create_short_url($model->shorturl);
@@ -104,6 +99,8 @@ class UrlController extends \yii\web\Controller
             ->where(['shorturl' => $hash])
             ->one();
         if (!is_null($record)) {
+            $record->counter += 1;
+            $record->save();
             return $this->redirect($record->url);
         } else {
             return $this->errorResponse("Указанная ссылка, не найдена.");
