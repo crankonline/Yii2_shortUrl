@@ -2,34 +2,35 @@
 
 namespace app\controllers;
 
-use phpDocumentor\Reflection\DocBlock\Tags\PropertyWrite;
 use Yii;
-use yii\base\BaseObject;
 use yii\rest\ActiveController;
 use app\models\Shorturl;
 
-class UrlController extends ActiveController
+class UrlController extends \yii\web\Controller
 {
-    public $modelClass = 'app\models\Shorturl';
+    private function errorResponse($message) {
+        Yii::$app->response->statusCode = 400;
+        return $this->asJson(['error' => $message]);
+    }
 
-    private function validateUrlFormat($url)
+    private function validateUrlFormat($url): mixed
     {
         return filter_var($url, FILTER_VALIDATE_URL);
     }
 
-    private function shuffle()
+    private function shuffle(): string
     {
         $permitted_chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
         return substr(str_shuffle($permitted_chars), 0, 6);
     }
 
-    private function create_short_url($url, $shorturl)
+    private function create_short_url($url, $shorturl): string
     {
         $parse = parse_url($url);
         return "${parse['scheme']}://${parse['host']}/${shorturl}";
     }
 
-    protected function check_url_exists($url)
+    protected function check_url_exists($url): bool
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -40,17 +41,6 @@ class UrlController extends ActiveController
         curl_close($ch);
 
         return (!empty($response) && $response != 404);
-    }
-
-    public function actions()
-    {
-        $actions = parent::actions();
-        unset($actions['index']);
-        unset($actions['view']);
-        unset($actions['create']);
-        unset($actions['update']);
-        unset($actions['delete']);
-        return $actions;
     }
 
     public function actionIndex()
@@ -66,9 +56,9 @@ class UrlController extends ActiveController
                 'url' => $record->url,
                 'count' => $record->counter
             ];
-            return json_encode($return);
+            return $this->asJson($return);
         } else {
-            throw new \yii\web\NotFoundHttpException("Указанный hash не найден.");
+            return $this->errorResponse("Указанный hash не найден.");
         }
     }
 
@@ -76,10 +66,10 @@ class UrlController extends ActiveController
     {
         $model = new Shorturl();
 
-        $url = Yii::$app->request->post('url'); //проверка на нул
-
+        $request = json_decode(Yii::$app->request->getRawBody());
+        $url = $request->url;
         if ($this->validateUrlFormat($url) == false) {
-            throw new \yii\web\BadRequestHttpException("URL имеет неправильный формат.");
+            return $this->errorResponse("URL имеет неправильный формат.");
         }
 
         $record = Shorturl::find()
@@ -93,7 +83,7 @@ class UrlController extends ActiveController
         }
 
         if (!$this->check_url_exists($url)) {
-            throw new \yii\web\BadRequestHttpException("URL не существует.");
+            return $this->errorResponse("URL не существует.");
         }
 
         $model->url = $url;
