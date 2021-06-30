@@ -15,7 +15,7 @@ $config = [
         'request' => [
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
             'cookieValidationKey' => 'hrbonURYcduD31a0YWKmxQdWazETH4DK',
-            //'enableCsrfValidation' => false,
+            'enableCsrfValidation' => false,
             'parsers' => [
                 'application/json' => 'yii\web\JsonParser',
             ]
@@ -54,9 +54,9 @@ $config = [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
-//                ['class' => 'yii\rest\UrlRule',
-//                    'controller' => 'user',
-//                    'prefix' => 'api/v1']
+                'POST api/v1/link/create' => 'url/create',
+                'GET api/v1/link/<hash:\w+>' => 'url/index', // c версионностью апи в Yii до конца не разобрался
+                '/<hash:\w+>' => 'url/redirect'
             ],
         ],
 
