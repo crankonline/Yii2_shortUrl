@@ -4,6 +4,7 @@ namespace app\controllers;
 
 use phpDocumentor\Reflection\DocBlock\Tags\PropertyWrite;
 use Yii;
+use yii\base\BaseObject;
 use yii\rest\ActiveController;
 use app\models\Shorturl;
 
@@ -44,13 +45,31 @@ class UrlController extends ActiveController
     public function actions()
     {
         $actions = parent::actions();
+        unset($actions['index']);
+        unset($actions['view']);
         unset($actions['create']);
+        unset($actions['update']);
+        unset($actions['delete']);
         return $actions;
     }
 
-    public function actionView()
+    public function actionIndex()
     {
-        return "Kartina repina";
+        $hash = Yii::$app->request->get('hash');
+        $record = Shorturl::find()
+            ->where(['shorturl' => $hash])
+            ->one();
+        if (!is_null($record)) {
+            $record->counter += 1;
+            $record->save();
+            $return = [
+                'url' => $record->url,
+                'count' => $record->counter
+            ];
+            return json_encode($return);
+        } else {
+            throw new \yii\web\NotFoundHttpException("Указанный hash не найден.");
+        }
     }
 
     public function actionCreate()
@@ -63,16 +82,14 @@ class UrlController extends ActiveController
             throw new \yii\web\BadRequestHttpException("URL имеет неправильный формат.");
         }
 
-        $count_records = Shorturl::find()
+        $record = Shorturl::find()
             ->where(['url' => $url])
             ->one();
-        //var_dump($count_records);die;
-        if (!is_null($count_records)) {
-            $record = Shorturl::findOne($count_records['id']);
-            $record->counter +=1;
-            $count_records['counter'] += 1;
+        if (!is_null($record)) {
+            //$record = Shorturl::findOne($count_records['id']);
+            $record->counter += 1;
             $record->save();
-            return $this->create_short_url($url, $count_records['shorturl']);
+            return $this->create_short_url($url, $record->shorturl);
         }
 
         if (!$this->check_url_exists($url)) {

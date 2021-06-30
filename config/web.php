@@ -54,9 +54,8 @@ $config = [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
-//                ['class' => 'yii\rest\UrlRule',
-//                    'controller' => 'user',
-//                    'prefix' => 'api/v1']
+                'url/create' => 'url/create',
+                'url/<hash:\w+>' => 'url/index',
             ],
         ],
 
