@@ -101,4 +101,18 @@ class User extends \yii\base\BaseObject implements \yii\web\IdentityInterface
     {
         return $this->password === $password;
     }
+
+    public static function getAll()
+    {
+        $result = [];
+
+        foreach (self::$users as $user) {
+            $result[] = [
+                'id' => $user['id'],
+                'username' => $user['username'],
+            ];
+        }
+
+        return $result;
+    }
 }

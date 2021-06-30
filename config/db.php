@@ -2,7 +2,7 @@
 
 return [
     'class' => 'yii\db\Connection',
-    'dsn' => 'mysql:host=yii2shorturl_mysql_1;dbname=ShortUrl',
+    'dsn' => 'mysql:host=yii2_shorturl-mysql;port=3306;dbname=ShortUrl',
     'username' => 'mysql',
     'password' => 'root',
     'charset' => 'utf8',
